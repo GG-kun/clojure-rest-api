@@ -12,7 +12,23 @@
     (:gen-class))
 
 ; my elements mutable collection vector
+;; (def element {:id "id"})
 (def elements (atom []))
+;; ;; Add
+;; (defn add-element [element collection]
+;;   (swap! collection conj element))
+;; ;; Delete 
+;; (defn delete-element-by-id [id collection]
+;;   (swap! collection #(remove (fn [element] (= (:id element) id)) %)))
+
+;; (defn delete-element [element collection]
+;;   (delete-element-by-id (get element :id) elements))
+;; ;; Edit
+;; (defn edit-element [element collection]
+;;   (do 
+;;     (delete-element element collection)
+;;     (add-element element collection)))
+;; (edit-element {:id "id" :key "key"} elements)
 
 ;; Find
 (defn all [req]
@@ -60,11 +76,22 @@
    :headers {"Content-Type" "text/json"}
    :body    (delete-element (find-one (get req :params) @elements) @elements)})
 
+;; Edit
+(defn edit-element [element collection]
+  (do 
+    (delete-element element collection)
+    (add-element element collection)))
+
+(defn edit [req]
+  {:status  200
+    :headers {"Content-Type" "text/json"}
+    :body    (edit-element (get req :params) elements)})
+
 (defroutes app-routes
   (GET "/" [] all)
   (GET "/:id" [] get-by-id)
   (POST "/" [] add)
-  ;; (PUT "/:id" [] edit)
+  (PUT "/" [] edit)
   (DELETE "/:id" [] delete)
   (route/not-found "Error, page not found!"))
 
