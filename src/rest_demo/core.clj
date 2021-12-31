@@ -48,19 +48,31 @@
    :headers {"Content-Type" "text/json"}
    :body    (add-element (get req :params) elements)})
 
+;; Delete 
+(defn delete-element-by-id [id collection]
+  (swap! collection #(remove (fn [element] (= (:id element) id)) %)))
+
+(defn delete-element [element collection]
+  (delete-element-by-id (get element :id) elements))
+
+(defn delete [req]
+  {:status  200
+   :headers {"Content-Type" "text/json"}
+   :body    (delete-element (find-one (get req :params) @elements) @elements)})
+
 (defroutes app-routes
   (GET "/" [] all)
   (GET "/:id" [] get-by-id)
   (POST "/" [] add)
   ;; (PUT "/:id" [] edit)
-  ;; (DELETE "/:id" [] edit)
+  (DELETE "/:id" [] delete)
   (route/not-found "Error, page not found!"))
 
-  (defn -main
-    [& args]
-    (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
-      ; Run the server with Ring.defaults middleware
-      (server/run-server (wrap-reload (js/wrap-json-params (js/wrap-json-response (wrap-defaults #'app-routes api-defaults)))) {:port port})
-      ; Run the server without ring defaults
-      ;(server/run-server #'app-routes {:port port})
-      (println (str "Running webserver at http:/127.0.0.1:" port "/"))))
+(defn -main
+  [& args]
+  (let [port (Integer/parseInt (or (System/getenv "PORT") "3000"))]
+    ; Run the server with Ring.defaults middleware
+    (server/run-server (wrap-reload (js/wrap-json-params (js/wrap-json-response (wrap-defaults #'app-routes api-defaults)))) {:port port})
+    ; Run the server without ring defaults
+    ;(server/run-server #'app-routes {:port port})
+    (println (str "Running webserver at http:/127.0.0.1:" port "/"))))
